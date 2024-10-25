@@ -19,7 +19,7 @@ import threading
 # Tunneling interfaces
 from networking import tun
 # IPv4 packet structure
-from packets import IPv4
+from packets import IPv4, Ethernet
 # Sockets
 import socket
 # Utilities
@@ -32,43 +32,67 @@ class Demultiplexer():
         self.private_ip = private_ip
         self.hub_ip = hub_ip
 
-        self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
-        self.socket_private.bind((private_ip, 0))
-        self.socket_private.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
+        #ETH_P_IP = 0x800
+        #ETH_P_IP = 3
+        #self.socket_private = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_IP))
+        #self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+        #self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, 4)
+        #self.socket_private.bind(("r1-eth0", 0))
+
+        demux_tun = tun.Tun(address="192.168.3.2", mtu=1500, name="r6-tun1");
+        #self.socket_private.bind(("0.0.0.0", 0))
+        #self.socket_private.setsockopt(socket.SOL_SOCKET, 25, str("r1-eth0" + "\0").encode('utf-8'))
+        #self.socket_private.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
 
         self.socket_public = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
-        self.socket_private.bind((public_ip, 0))
+        self.socket_public.bind((public_ip, 0))
         self.socket_public.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
         
-        thread = threading.Thread(target=self.read_from_public, args=(self.socket_private, self.socket_public, self.private_ip, ), daemon=True)
+        thread = threading.Thread(target=self.read_from_public, args=(self.socket_public, demux_tun, self.private_ip, ), daemon=True)
         thread.start()
 
-        thread = threading.Thread(target=self.read_from_private, args=(self.socket_private, self.socket_public, self.public_ip, self.hub_ip), daemon=True)
+        thread = threading.Thread(target=self.read_from_private, args=(self.socket_public, demux_tun, self.public_ip, self.hub_ip), daemon=True)
         thread.start()
         
 
     def read_from_public(self, pubfd, privfd, private_ip, mtu=1500):
         while True:
             try:
+                print("....RECV....")
                 buf = pubfd.recv(mtu)
+                print(list(buf))
                 outer = IPv4.IPv4Packet(buf)
                 inner = outer.get_payload()
-                privfd.sendto(inner, (private_ip, 0))
+                privfd.write(inner)
             except Exception as e:
                 print(e)
 
     def read_from_private(self, pubfd, privfd, public_ip, hub_ip, mtu=1500):
         while True:
             try:
-                buf = privfd.recv(mtu)
+                print("!!!!!!!!!!!")
+                buf = privfd.read(mtu)
+                """
+                print(list(buf[14:]))
+                print(list(buf[:14]))
+                ether = Ethernet.EthernetFrame(buf)
+                print(ether.get_type())
+                if ether.get_type() != 0x0800:
+                    print(ether.get_type())
+                    continue
+                print(list(ether.get_payload()))
+                print("_________________")
+                """
                 inner = IPv4.IPv4Packet(buf)
                 packet = IPv4.IPv4Packet()
+                print(Misc.bytes_to_ipv4_string(inner.get_source_address()))
+                print("---------------------------------------")
                 packet.set_destination_address(Misc.ipv4_address_to_bytes(hub_ip))
                 packet.set_source_address(Misc.ipv4_address_to_bytes(public_ip))
                 packet.set_ttl(128)
-                packet.set_payload(inner)
+                packet.set_payload(inner.get_buffer())
                 packet.set_total_length(len(packet.get_buffer()))
-                pubfd.sendto(packet.get_buffer(), (Misc.bytes_to_ipv4_string(public_ip), 0))
+                pubfd.sendto(packet.get_buffer(), (public_ip, 0))
             except Exception as e:
                 print(e)
 

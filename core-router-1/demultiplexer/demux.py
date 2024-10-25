@@ -53,9 +53,12 @@ class Demultiplexer():
         while True:
             try:
                 buf = sockfd.recv(mtu)
-                outer = IPv4.IPv4Packet(buf)
+                print(list(buf))
+                outer = IPv4.IPv4Packet(bytearray(buf))
                 source = outer.get_source_address()
                 inner = outer.get_payload()
+                print("GOT PACKET ON PUBLIC INTERFACE")
+                print(Misc.bytes_to_ipv4_string(source))
                 tun = self.demux_table[Misc.bytes_to_ipv4_string(source)]
                 tun.write(inner)
             except Exception as e:
@@ -66,27 +69,34 @@ class Demultiplexer():
         while True:
             try:
                 buf = tunfd.read(mtu);
-                inner = IPv4.IPv4Packet(buf)
-                
-                ttl = int(inner.get_ttl())
+                print(list(buf))
+                inner = IPv4.IPv4Packet(bytearray(buf))
+
+                ttl = inner.get_ttl()
+
+                print(inner.get_source_address())
+                print(inner.get_destination_address())
                 
                 ttl -= 1
                 
                 if ttl <= 0:
                     continue
-                print(inner)
-                print(ttl)
+
                 inner.set_ttl(ttl)
 
                 outer = IPv4.IPv4Packet()
-                outer.set_source_address(self.own_ip)
-                outer.set_destination_address(destination)
+                outer.set_source_address(Misc.ipv4_address_to_bytes(self.own_ip))
+                outer.set_destination_address(Misc.ipv4_address_to_bytes(destination))
+                outer.set_protocol(4)
                 outer.set_ttl(128)
                 outer.set_payload(inner.get_buffer())
-                outer.set_total_length(len(outer.get_buffer()))
+                
+                outer.set_total_length(len(bytearray(outer.get_buffer())))
+                print(list(outer.get_buffer()))
 
                 sockfd.sendto(outer.get_buffer(), (destination, 0))
             except Exception as e:
-
+                
                 print(e)
+                raise e
         

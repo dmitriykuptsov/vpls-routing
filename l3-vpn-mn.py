@@ -105,6 +105,23 @@ def run():
     info( net[ 'r4' ].cmd( 'cd core-router-3 && python3 router.py &' ) )
     info( '*** Running L3-VPN on router 5 *** \n')
     info( net[ 'r5' ].cmd( 'cd spoke-router-2 && python3 router.py &' ) )
+    info( '*** Running L3-VPN on router 6 *** \n')
+    info( net[ 'r6' ].cmd( 'cd spoke-router-3 && python3 router.py &' ) )
+
+    sleep(10)
+    info( net[ 'r2' ].cmd( 'ip addr' ) )
+    info( net[ 'r2' ].cmd( 'ip route add 192.168.1.0/24 dev r2-tun1' ) )
+    info( net[ 'r2' ].cmd( 'ip route add 192.168.2.0/24 dev r2-tun2' ) )
+    info( net[ 'r2' ].cmd( 'ip route add 192.168.3.0/24 dev r2-tun3' ) )
+
+    info( net[ 'r3' ].cmd( 'ip route add 192.168.2.0/24 dev r3-tun1' ) )
+    info( net[ 'r3' ].cmd( 'ip route add 192.168.1.0/24 dev r3-tun2' ) )
+    info( net[ 'r3' ].cmd( 'ip route add 192.168.3.0/24 dev r3-tun3' ) )
+
+    info( net[ 'r4' ].cmd( 'ip route add 192.168.3.0/24 dev r4-tun1' ) )
+    info( net[ 'r4' ].cmd( 'ip route add 192.168.1.0/24 dev r4-tun2' ) )
+    info( net[ 'r4' ].cmd( 'ip route add 192.168.2.0/24 dev r4-tun3' ) )
+
     CLI( net )
     net.stop()
 
