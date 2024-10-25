@@ -40,7 +40,7 @@ class Demultiplexer():
         self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
         
         for interface in self.interfaces:
-            demux_tun = tun.Tun(address=interface["address"], mtu=interface["mtu"], name=interfaces["name"]);
+            demux_tun = tun.Tun(address=interface["address"], mtu=interface["mtu"], name=interface["name"]);
             self.demux_table[interface["destination"]] = demux_tun;
             thread = threading.Thread(target=self.read_from_tun, args=(demux_tun, self.socket, interface["destination"], interface["mtu"]), daemon=True)
             thread.start()
