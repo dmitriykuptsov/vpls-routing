@@ -50,7 +50,7 @@ class Demultiplexer():
     def read_from_public(self, pubfd, privfd, private_ip, mtu=1500):
         while True:
             try:
-                buf = pubfd.read(mtu)
+                buf = pubfd.recv(mtu)
                 outer = IPv4.IPv4Packet(buf)
                 inner = outer.get_payload()
                 privfd.sendto(inner, (private_ip, 0))
