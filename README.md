@@ -3,11 +3,11 @@
 # Deployment
 
 ```
-$ sudo bash deployment/deploy.sh
+$ sudo bash deploy.sh
 ```
 
 # Running 
 
 ```
-$ python3 mininet.py
+$ python3 l3-vpn-mn.py
 ```
