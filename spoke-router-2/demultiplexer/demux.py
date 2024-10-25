@@ -30,7 +30,7 @@ class Demultiplexer():
     def __init__(self, public_ip, private_ip, hub_ip):
         self.public_ip = public_ip
         self.private_ip = private_ip
-        self.hun_ip = hub_ip
+        self.hub_ip = hub_ip
 
         self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.socket_private.bind((private_ip, 0))
