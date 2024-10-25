@@ -67,7 +67,7 @@ class Demultiplexer():
             buf = tunfd.read(mtu);
             inner = IPv4.IPv4Packet(buf)
             
-            ttl = inner.get_ttl()
+            ttl = int(inner.get_ttl())
             ttl -= 1
             
             if ttl <= 0:

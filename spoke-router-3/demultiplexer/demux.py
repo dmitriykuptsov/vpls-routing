@@ -40,7 +40,7 @@ class Demultiplexer():
         self.socket_private.bind((public_ip, 0))
         self.socket_public.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
         
-        thread = threading.Thread(target=self.read_from_public, args=(self.socket_private, self.socket_public, ), daemon=True)
+        thread = threading.Thread(target=self.read_from_public, args=(self.socket_private, self.socket_public, self.private_ip, ), daemon=True)
         thread.start()
 
         thread = threading.Thread(target=self.read_from_private, args=(self.socket_private, self.socket_public, self.public_ip, self.hub_ip), daemon=True)
