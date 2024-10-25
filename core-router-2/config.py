@@ -16,15 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 config = {
-    "own_ip": "1.1.1.2",
+    "own_ip": "1.1.1.3",
     "routes": {
-        "192.168.2.0/24": "tun1",
-        "192.168.1.0/24": "tun2",
-        "192.168.3.0/24": "tun2"
+        "192.168.2.0/24": "r3-tun1",
+        "192.168.1.0/24": "r3-tun2",
+        "192.168.3.0/24": "r3-tun2"
     },
     "interfaces": [
         {
-            "name": "tun1",
+            "name": "r3-tun1",
             "address": "192.168.2.102",
             "mask": "255.255.255.0",
             "destination": "1.1.1.5",
@@ -32,7 +32,7 @@ config = {
         },
         {
 
-            "name": "tun2",
+            "name": "r3-tun2",
             "address": "192.168.1.102",
             "mask": "255.255.255.0",
             "destination": "1.1.1.2",
@@ -40,7 +40,7 @@ config = {
             
         }, 
         {
-            "name": "tun3",
+            "name": "r3-tun3",
             "address": "192.168.3.102",
             "mask": "255.255.255.0",
             "destination": "1.1.1.4",

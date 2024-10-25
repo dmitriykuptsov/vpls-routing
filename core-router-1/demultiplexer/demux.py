@@ -42,7 +42,7 @@ class Demultiplexer():
         for interface in self.interfaces:
             demux_tun = tun.Tun(address=interface["address"], mtu=interface["mtu"]);
             self.demux_table[interface["destination"]] = demux_tun;
-            thread = threading.Thread(target=self.read_from_tun, args=(demux_tun, interface["destination"], interface["mtu"]), daemon=True)
+            thread = threading.Thread(target=self.read_from_tun, args=(demux_tun, self.socket, interface["destination"], interface["mtu"]), daemon=True)
             thread.start()
 
         thread = threading.Thread(target=self.read_from_public, args=(self.socket, ), daemon=True)
@@ -62,7 +62,7 @@ class Demultiplexer():
                 print(e)
 
     
-    def read_from_tun(self, tunfd, sockfd, destination, mtu):
+    def read_from_tun(self, tunfd, sockfd, destination, mtu = 1500):
         while True:
             buf = tunfd.read(mtu);
             inner = IPv4.IPv4Packet(buf)

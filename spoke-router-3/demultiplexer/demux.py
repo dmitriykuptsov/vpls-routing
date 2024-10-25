@@ -34,11 +34,11 @@ class Demultiplexer():
 
         self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.socket_private.bind((private_ip, 0))
-        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
+        self.socket_private.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
 
         self.socket_public = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.socket_private.bind((public_ip, 0))
-        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
+        self.socket_public.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
         
         thread = threading.Thread(target=self.read_from_public, args=(self.socket_private, self.socket_public, ), daemon=True)
         thread.start()
