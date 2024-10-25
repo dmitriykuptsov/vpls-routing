@@ -64,23 +64,29 @@ class Demultiplexer():
     
     def read_from_tun(self, tunfd, sockfd, destination, mtu = 1500):
         while True:
-            buf = tunfd.read(mtu);
-            inner = IPv4.IPv4Packet(buf)
-            
-            ttl = int(inner.get_ttl())
-            ttl -= 1
-            
-            if ttl <= 0:
-                continue
-            inner.set_ttl(ttl)
+            try:
+                buf = tunfd.read(mtu);
+                inner = IPv4.IPv4Packet(buf)
+                
+                ttl = int(inner.get_ttl())
+                
+                ttl -= 1
+                
+                if ttl <= 0:
+                    continue
+                print(inner)
+                print(ttl)
+                inner.set_ttl(ttl)
 
-            outer = IPv4.IPv4Packet()
-            outer.set_source_address(self.own_ip)
-            outer.set_destination_address(destination)
-            outer.set_ttl(128)
-            outer.set_payload(inner.get_buffer())
-            outer.set_total_length(len(outer.get_buffer()))
+                outer = IPv4.IPv4Packet()
+                outer.set_source_address(self.own_ip)
+                outer.set_destination_address(destination)
+                outer.set_ttl(128)
+                outer.set_payload(inner.get_buffer())
+                outer.set_total_length(len(outer.get_buffer()))
 
-            sockfd.sendto(outer.get_buffer(), (destination, 0))
+                sockfd.sendto(outer.get_buffer(), (destination, 0))
+            except Exception as e:
 
+                print(e)
         
