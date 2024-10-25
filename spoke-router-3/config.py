@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 config = {
-    "public_ip": "1.1.1.1",
-    "private_ip": "192.168.1.1",
-    "hub_ip": "1.1.1.2"
+    "public_ip": "1.1.1.6",
+    "private_ip": "192.168.3.1",
+    "hub_ip": "1.1.1.4"
 }
