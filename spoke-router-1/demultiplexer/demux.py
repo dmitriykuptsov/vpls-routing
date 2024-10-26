@@ -24,13 +24,17 @@ from packets import IPv4, Ethernet
 import socket
 # Utilities
 from utils.misc import Misc
+# Crypto
+from crypto.digest import SHA256HMAC
 
 class Demultiplexer():
 
-    def __init__(self, public_ip, private_ip, hub_ip):
+    def __init__(self, public_ip, private_ip, hub_ip, key = None, auth=False):
         self.public_ip = public_ip
         self.private_ip = private_ip
         self.hub_ip = hub_ip
+        self.auth = auth
+        self.key = bytearray(key.encode("ascii"))
 
         demux_tun = tun.Tun(address="192.168.1.2", mtu=1500, name="r1-tun1");
         self.socket_public = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.IPPROTO_IP)
@@ -50,10 +54,20 @@ class Demultiplexer():
         while True:
             try:
                 buf = pubfd.recv(mtu)
-                outer = IPv4.IPv4Packet(buf[14:])
+                if self.auth:
+                    outer = IPv4.IPv4Packet(buf[14:-32])
+                else:
+                    outer = IPv4.IPv4Packet(buf[14:])
                 destination = outer.get_destination_address()
                 if Misc.bytes_to_ipv4_string(destination) != self.public_ip:
                     continue
+                if self.auth:
+                    icv = buf[-32:]
+                    sha256 = SHA256HMAC(self.key)
+                    hmac = sha256.digest(outer.get_payload())
+                    if icv != hmac:
+                        print(Misc.bytes_to_ipv4_string(outer.get_source_address()))
+                        continue
                 inner = outer.get_payload()
                 privfd.write(inner)
             except Exception as e:
@@ -72,7 +86,12 @@ class Demultiplexer():
                 packet.set_payload(inner.get_buffer())
                 packet.set_ihl(5)
                 packet.set_total_length(len(packet.get_buffer()))
-                pubfd.sendto(packet.get_buffer(), (hub_ip, 0))                
+                if self.auth:                   
+                    sha256 = SHA256HMAC(self.key)
+                    hmac = sha256.digest(packet.get_payload())
+                    pubfd.sendto(packet.get_buffer() + hmac, (hub_ip, 0))
+                else:
+                    pubfd.sendto(packet.get_buffer(), (hub_ip, 0))                
             except Exception as e:
                 print(e)
 

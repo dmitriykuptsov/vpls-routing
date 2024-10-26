@@ -17,6 +17,7 @@
 
 config = {
     "own_ip": "1.1.1.4",
+    "enable_auth": False,
     "routes": {
         "192.168.1.0/24": "r4-tun1",
         "192.168.2.0/24": "r4-tun2",
@@ -28,6 +29,7 @@ config = {
             "address": "192.168.3.103",
             "mask": "255.255.255.0",
             "destination": "1.1.1.6",
+            "auth_key": "oyctIajifwobAbhefIrcEdNersAmKiWr",
             "mtu": 1400
         },
         {
@@ -36,6 +38,7 @@ config = {
             "address": "192.168.1.103",
             "mask": "255.255.255.0",
             "destination": "1.1.1.2",
+            "auth_key": "OpEedsEgNovadrovvekawvekyoykAjin",
             "mtu": 1400
             
         }, 
@@ -44,6 +47,7 @@ config = {
             "address": "192.168.2.103",
             "mask": "255.255.255.0",
             "destination": "1.1.1.3",
+            "auth_key": "oyctIajifwobAbhefIrcEdNersAmKiWr",
             "mtu": 1400
         }
     ]

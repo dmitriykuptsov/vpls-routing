@@ -29,7 +29,7 @@ from config import config
 # Main router functionality
 from demultiplexer.demux import Demultiplexer
 
-demux = Demultiplexer(config["interfaces"], config["own_ip"])
+demux = Demultiplexer(config["interfaces"], config["own_ip"], auth=config["enable_auth"])
 
 while True:
     print("Periodic task....")

@@ -22,14 +22,19 @@ from networking import tun
 from packets import IPv4
 # Sockets
 import socket
+import traceback
 # Utilities
 from utils.misc import Misc
+# Crypto
+from crypto.digest import SHA256HMAC
 
 class Demultiplexer():
 
-    def __init__(self, interfaces, own_ip):
+    def __init__(self, interfaces, own_ip, auth=True):
         self.interfaces = interfaces
         self.demux_table = {}
+        self.keys = {}
+        self.auth= auth
         self.own_ip = own_ip
         self.tuns = []
         self.socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.IPPROTO_IP)
@@ -37,8 +42,8 @@ class Demultiplexer():
         self.socket_raw = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.socket_raw.bind((own_ip, 0))
         self.socket_raw.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-        
         for interface in self.interfaces:
+            self.keys[interface["destination"]] = bytearray(interface["auth_key"].encode("ascii"))
             demux_tun = tun.Tun(address=interface["address"], mtu=interface["mtu"], name=interface["name"]);
             network = Misc.ipv4_address_to_int(interface["address"]) & Misc.ipv4_address_to_int(interface["mask"])
             self.demux_table[Misc.bytes_to_ipv4_string(Misc.int_to_ipv4_address(network))] = demux_tun;
@@ -53,11 +58,22 @@ class Demultiplexer():
         while True:
             try:
                 buf = sockfd.recv(mtu)
-                outer = IPv4.IPv4Packet(bytearray(buf[14:]))
+                if self.auth:
+                    outer = IPv4.IPv4Packet(bytearray(buf[14:-32]))
+                else:
+                    outer = IPv4.IPv4Packet(bytearray(buf[14:]))
                 source = outer.get_source_address()
                 destination = outer.get_destination_address()
+
                 if Misc.bytes_to_ipv4_string(destination) != self.own_ip:
                     continue
+                if self.auth:
+                    icv = buf[-32:]
+                    key = self.keys[Misc.bytes_to_ipv4_string(source)]
+                    sha256 = SHA256HMAC(key)
+                    hmac = sha256.digest(outer.get_payload())
+                    if icv != hmac:
+                        continue
                 inner = IPv4.IPv4Packet(outer.get_payload())
                 source = inner.get_source_address()
                 destination = inner.get_destination_address()
@@ -65,6 +81,7 @@ class Demultiplexer():
                 tun = self.demux_table[Misc.bytes_to_ipv4_string(Misc.int_to_ipv4_address(network))]
                 tun.write(inner.get_buffer())
             except Exception as e:
+                print(traceback.format_exc())
                 print(e)
 
     
@@ -81,7 +98,14 @@ class Demultiplexer():
                 outer.set_ihl(5)
                 outer.set_payload(inner.get_buffer())
                 outer.set_total_length(len(bytearray(outer.get_buffer())))
-                sockfd.sendto(outer.get_buffer(), (destination, 0))
+                if self.auth:                    
+                    key = self.keys[destination]
+                    sha256 = SHA256HMAC(key)
+                    hmac = sha256.digest(outer.get_payload())
+                    sockfd.sendto(outer.get_buffer() + hmac, (destination, 0))
+                else:
+                    sockfd.sendto(outer.get_buffer(), (destination, 0))
             except Exception as e:
+                print(traceback.format_exc())
                 print(e)
-                
+        
