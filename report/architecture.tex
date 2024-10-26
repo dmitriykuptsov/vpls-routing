@@ -13,9 +13,9 @@
         \hline
         Characteristic $\downarrow$ \ Overlay type $\rightarrow$ & L2-VPLS & L3-VPN & HIP-VPLS \\\hline
         Size of forwarding/routing table & $O(n)$, $n$-number of hosts & $O(m)$, $m$ - number of subnetworks & $O(n)$\\\hline
-        Number of links in mesh & $O(l^2)$, $l$ - number of PEs & $O(k^2)$, $k$ - number of hub PEs & $O(l^2)$ \\\hline
+        Number of links in mesh & $O(k^2)$, $k$ - number of Hub-PEs & $O(k^2)$ & $O(l^2)$, $l$ - number of PEs \\\hline
         Privacy & MACs are exposed to PEs & IPs are exposed to PEs & No exposure of MACs and IPs (PEs are part of customers inftrastructure) \\\hline
-        Encryption adn authentication & Hop-by-hop & Hop-by-hop & End-to-end \\\hline
+        Encryption and authentication & Hop-by-hop & Hop-by-hop & End-to-end \\\hline
         Tunneling mode & Ethernet-in-IP & IP-in-IP & Ethernet-in-IP \\\hline
         \end{tabular}
         \label{tab:analysis}
