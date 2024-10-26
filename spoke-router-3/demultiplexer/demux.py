@@ -44,14 +44,20 @@ class Demultiplexer():
         #self.socket_private.setsockopt(socket.SOL_SOCKET, 25, str("r1-eth0" + "\0").encode('utf-8'))
         #self.socket_private.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
 
-        self.socket_public = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
-        self.socket_public.bind((public_ip, 0))
-        self.socket_public.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-        
+        #self.socket_public = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+        #self.socket_public.bind((public_ip, 0))
+        #self.socket_public.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
+        self.socket_public = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.IPPROTO_IP)
+        self.socket_public.bind(("r6-eth1", 0x0800))
+
+        self.socket_raw = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+        self.socket_raw.bind((public_ip, 0))
+        self.socket_raw.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
+
         thread = threading.Thread(target=self.read_from_public, args=(self.socket_public, demux_tun, self.private_ip, ), daemon=True)
         thread.start()
 
-        thread = threading.Thread(target=self.read_from_private, args=(self.socket_public, demux_tun, self.public_ip, self.hub_ip), daemon=True)
+        thread = threading.Thread(target=self.read_from_private, args=(self.socket_raw, demux_tun, self.public_ip, self.hub_ip), daemon=True)
         thread.start()
         
 
@@ -60,9 +66,12 @@ class Demultiplexer():
             try:
                 print("....RECV....")
                 buf = pubfd.recv(mtu)
-                print(list(buf))
-                outer = IPv4.IPv4Packet(buf)
+                print(list(buf[14:]))
+                outer = IPv4.IPv4Packet(buf[14:])
                 inner = outer.get_payload()
+                print("********")
+                print(list(inner))
+                print("********")
                 privfd.write(inner)
             except Exception as e:
                 print(e)
@@ -72,27 +81,18 @@ class Demultiplexer():
             try:
                 print("!!!!!!!!!!!")
                 buf = privfd.read(mtu)
-                """
-                print(list(buf[14:]))
-                print(list(buf[:14]))
-                ether = Ethernet.EthernetFrame(buf)
-                print(ether.get_type())
-                if ether.get_type() != 0x0800:
-                    print(ether.get_type())
-                    continue
-                print(list(ether.get_payload()))
-                print("_________________")
-                """
                 inner = IPv4.IPv4Packet(buf)
                 packet = IPv4.IPv4Packet()
                 print(Misc.bytes_to_ipv4_string(inner.get_source_address()))
                 print("---------------------------------------")
                 packet.set_destination_address(Misc.ipv4_address_to_bytes(hub_ip))
                 packet.set_source_address(Misc.ipv4_address_to_bytes(public_ip))
+                packet.set_protocol(4)
                 packet.set_ttl(128)
+                packet.set_ihl(5)
                 packet.set_payload(inner.get_buffer())
                 packet.set_total_length(len(packet.get_buffer()))
-                pubfd.sendto(packet.get_buffer(), (public_ip, 0))
+                pubfd.sendto(packet.get_buffer(), (hub_ip, 0))
             except Exception as e:
                 print(e)
 

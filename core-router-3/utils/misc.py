@@ -59,11 +59,19 @@ class Misc():
     @staticmethod
     def ipv4_address_to_int(address):
         parts = address.split(".")
-        addr = (int(parts[0]) & 0xFF << 24)
-        addr |= (int(parts[1]) & 0xFF << 16)
-        addr |= (int(parts[2]) & 0xFF << 8)
+        addr = ((int(parts[0]) & 0xFF) << 24)
+        addr |= ((int(parts[1]) & 0xFF) << 16)
+        addr |= ((int(parts[2]) & 0xFF) << 8)
         addr |= (int(parts[3]) & 0xFF)
         return addr
+    @staticmethod
+    def int_to_ipv4_address(address):
+        buf = [0, 0, 0, 0]
+        buf[0] = (address >> 24) & 0xFF
+        buf[1] = (address >> 16) & 0xFF
+        buf[2] = (address >> 8)  & 0xFF
+        buf[3] =  address & 0xFF
+        return buf
     
     @staticmethod
     def port_to_bytes(port):

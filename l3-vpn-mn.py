@@ -57,7 +57,7 @@ class NetworkTopo( Topo ):
                            defaultRoute='via 192.168.1.1' )
         h2 = self.addHost( 'h2', ip='192.168.2.100/24',
                            defaultRoute='via 192.168.2.1' )
-        h3 = self.addHost( 'h2', ip='192.168.3.100/24',
+        h3 = self.addHost( 'h3', ip='192.168.3.100/24',
                            defaultRoute='via 192.168.3.1' )
         for h, s in [ (h1, s1), (h2, s2), (h3, s3) ]:
             self.addLink( h, s )
@@ -83,9 +83,11 @@ def run():
 
     info( net[ 'h1' ].cmd( '/sbin/ethtool -K h1-eth0 rx off tx off sg off' ) )
     info( net[ 'h2' ].cmd( '/sbin/ethtool -K h2-eth0 rx off tx off sg off' ) )
+    info( net[ 'h3' ].cmd( '/sbin/ethtool -K h2-eth0 rx off tx off sg off' ) )
 
     info( net[ 'h1' ].cmd( 'ifconfig h1-eth0 mtu 1300' ) )
     info( net[ 'h2' ].cmd( 'ifconfig h2-eth0 mtu 1300' ) )
+    info( net[ 'h3' ].cmd( 'ifconfig h3-eth0 mtu 1300' ) )
 
     info( net[ 's1' ].cmd( 'ovs-vsctl set bridge s1 stp_enable=true' ) )
     info( net[ 's2' ].cmd( 'ovs-vsctl set bridge s2 stp_enable=true' ) )
@@ -110,6 +112,7 @@ def run():
 
     sleep(10)
     info( net[ 'r2' ].cmd( 'ip addr' ) )
+    
     info( net[ 'r2' ].cmd( 'ip route add 192.168.1.0/24 dev r2-tun1' ) )
     info( net[ 'r2' ].cmd( 'ip route add 192.168.2.0/24 dev r2-tun2' ) )
     info( net[ 'r2' ].cmd( 'ip route add 192.168.3.0/24 dev r2-tun3' ) )
@@ -122,6 +125,10 @@ def run():
     info( net[ 'r4' ].cmd( 'ip route add 192.168.1.0/24 dev r4-tun2' ) )
     info( net[ 'r4' ].cmd( 'ip route add 192.168.2.0/24 dev r4-tun3' ) )
 
+    info( net[ 'r5' ].cmd( 'ip route add default dev r5-tun1' ) )
+    info( net[ 'r1' ].cmd( 'ip route add default dev r1-tun1' ) )
+    info( net[ 'r6' ].cmd( 'ip route add default dev r6-tun1' ) )
+    
     CLI( net )
     net.stop()
 
