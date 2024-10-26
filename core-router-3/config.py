@@ -17,7 +17,7 @@
 
 config = {
     "own_ip": "1.1.1.4",
-    "enable_auth": False,
+    "enable_auth": True,
     "routes": {
         "192.168.1.0/24": "r4-tun1",
         "192.168.2.0/24": "r4-tun2",

@@ -19,6 +19,6 @@ config = {
     "public_ip": "1.1.1.6",
     "private_ip": "192.168.3.1",
     "hub_ip": "1.1.1.4",
-    "enable_auth": False,
+    "enable_auth": True,
     "auth_key": "oyctIajifwobAbhefIrcEdNersAmKiWr",
 }
