@@ -50,14 +50,12 @@ class Demultiplexer():
     def read_from_public(self, pubfd, privfd, private_ip, mtu=1500):
         while True:
             try:
-                print("....RECV....")
                 buf = pubfd.recv(mtu)
-                print(list(buf[14:]))
                 outer = IPv4.IPv4Packet(buf[14:])
+                destination = outer.get_destination_address()
+                if Misc.bytes_to_ipv4_string(destination) != self.public_ip:
+                    continue
                 inner = outer.get_payload()
-                print("********")
-                print(list(inner))
-                print("********")
                 privfd.write(inner)
             except Exception as e:
                 print(e)
@@ -65,12 +63,9 @@ class Demultiplexer():
     def read_from_private(self, pubfd, privfd, public_ip, hub_ip, mtu=1500):
         while True:
             try:
-                print("!!!!!!!!!!!")
                 buf = privfd.read(mtu)
                 inner = IPv4.IPv4Packet(buf)
                 packet = IPv4.IPv4Packet()
-                print(Misc.bytes_to_ipv4_string(inner.get_source_address()))
-                print("---------------------------------------")
                 packet.set_destination_address(Misc.ipv4_address_to_bytes(hub_ip))
                 packet.set_source_address(Misc.ipv4_address_to_bytes(public_ip))
                 packet.set_protocol(4)
@@ -78,8 +73,7 @@ class Demultiplexer():
                 packet.set_ihl(5)
                 packet.set_payload(inner.get_buffer())
                 packet.set_total_length(len(packet.get_buffer()))
-                print(list(packet.get_buffer()))
-                print(pubfd.sendto(packet.get_buffer(), (hub_ip, 0)))
+                pubfd.sendto(packet.get_buffer(), (hub_ip, 0))
             except Exception as e:
                 print(e)
 
