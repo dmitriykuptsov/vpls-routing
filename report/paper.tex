@@ -38,18 +38,21 @@
 
 \begin{document}
 \sloppy
-\title{Building scalable and secure {{L3-VPN}}: Mininet prototype }
+\title{Building scalable and secure multipoint {{L3-VPN}}: Mininet prototype }
 \maketitle
 \begin{abstract}
-In this short document we describe scalable and secure L3-VPN architecture.
+In this short document we describe scalable and secure multipoint L3-VPN architecture.
 We implement the prototype in Mininet framework and evaluate end-to-end 
-performance of the hosts which are part of the L3-VPN. 
+performance of the hosts which are part of the L3-VPN. We consider two setups:
+with hop-by-hop authentication and without. Furthermore, we consider that the
+authentication keys are distributed with Host Identity Protocol, and that the 
+routers authenticate themselves using public keys. We conclude the paper with 
+comparision of different approaches for building the VPLS networks.
 \end{abstract}
 \input intro.tex
-\input background.tex
 \input architecture.tex
 \input experimental.tex
-\input conclusions.tex
+%\input conclusions.tex
 %\balance
 \bibliographystyle{abbrv}
 \bibliography{mybib}

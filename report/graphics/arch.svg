@@ -90,13 +90,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.8848168"
-     inkscape:cx="196.57083"
-     inkscape:cy="139.00555"
+     inkscape:cx="411.97638"
+     inkscape:cy="147.49444"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1440"
-     inkscape:window-height="771"
+     inkscape:window-height="773"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -412,7 +412,7 @@
          id="tspan24"
          style="font-size:2.82222px;stroke-width:0.264583"
          x="60.923252"
-         y="10.247459">Hop-by-Hop HIP encryption</tspan></text>
+         y="10.247459">Hop-by-Hop HIP authentication</tspan></text>
     <rect
        style="fill:#00a6c9;fill-opacity:0.0705882;stroke:#00c4ff;stroke-width:0.189624;stroke-dasharray:none"
        id="rect24"
