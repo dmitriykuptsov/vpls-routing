@@ -31,32 +31,14 @@ class Demultiplexer():
         self.public_ip = public_ip
         self.private_ip = private_ip
         self.hub_ip = hub_ip
-
-        #ETH_P_IP = 0x800
-        #ETH_P_IP = 3
-        #self.socket_private = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_IP))
-        #self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
-        #self.socket_private = socket.socket(socket.AF_INET, socket.SOCK_RAW, 4)
-        #self.socket_private.bind(("r1-eth0", 0))
-
         demux_tun = tun.Tun(address="192.168.3.2", mtu=1500, name="r6-tun1");
-        #self.socket_private.bind(("0.0.0.0", 0))
-        #self.socket_private.setsockopt(socket.SOL_SOCKET, 25, str("r1-eth0" + "\0").encode('utf-8'))
-        #self.socket_private.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-
-        #self.socket_public = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
-        #self.socket_public.bind((public_ip, 0))
-        #self.socket_public.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
         self.socket_public = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.IPPROTO_IP)
         self.socket_public.bind(("r6-eth1", 0x0800))
-
         self.socket_raw = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.socket_raw.bind((public_ip, 0))
         self.socket_raw.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-
         thread = threading.Thread(target=self.read_from_public, args=(self.socket_public, demux_tun, self.private_ip, ), daemon=True)
         thread.start()
-
         thread = threading.Thread(target=self.read_from_private, args=(self.socket_raw, demux_tun, self.public_ip, self.hub_ip), daemon=True)
         thread.start()
         

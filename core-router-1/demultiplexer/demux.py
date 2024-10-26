@@ -31,22 +31,15 @@ class Demultiplexer():
     def __init__(self, interfaces, own_ip):
         self.interfaces = interfaces
         self.demux_table = {}
-
         self.own_ip = own_ip
-
         self.tuns = []
-
         self.socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.IPPROTO_IP)
         self.socket.bind(("r2-eth1", 0x0800))
-        #self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-
         self.socket_raw = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.socket_raw.bind((own_ip, 0))
         self.socket_raw.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-
         for interface in self.interfaces:
             demux_tun = tun.Tun(address=interface["address"], mtu=interface["mtu"], name=interface["name"]);
-            
             network = Misc.ipv4_address_to_int(interface["address"]) & Misc.ipv4_address_to_int(interface["mask"])
             self.demux_table[Misc.bytes_to_ipv4_string(Misc.int_to_ipv4_address(network))] = demux_tun;
             thread = threading.Thread(target=self.read_from_tun, args=(demux_tun, self.socket_raw, interface["destination"], interface["mtu"]), daemon=True)
